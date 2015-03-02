@@ -19,7 +19,7 @@ public class PerfUtilsLightTest extends TestCase {
 	
 	public void testFullCycle() {
 		
-		for (int iteration = 0; iteration <= 10 ; iteration++)
+		for (int iteration = 0; iteration < 10 ; iteration++)
 		{
 		
 			PerfUtilsLight.PerformanceTransactionStart(transactions, "trans_1", iteration);
@@ -44,8 +44,8 @@ public class PerfUtilsLightTest extends TestCase {
 
 		}
 		
-		String summary = PerfUtilsLight.PerformanceTransactionsSummary(transactions);
 		
+		String summary = PerfUtilsLight.PerformanceTransactionsSummary(transactions);
 		System.out.println(summary);
 		
 	}	

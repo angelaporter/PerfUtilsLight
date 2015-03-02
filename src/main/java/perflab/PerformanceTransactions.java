@@ -7,7 +7,8 @@ public class PerformanceTransactions {
 	
 	//Collection of performance transactions
 	//private ArrayList<PerformanceTransaction> transactions = null;
-	private ArrayList<ArrayList<PerformanceTransaction>> iterative_transactions = null;
+	//private ArrayList<ArrayList<PerformanceTransaction>> iterative_transactions = null;
+	private HashMap<Integer, ArrayList<PerformanceTransaction>> transactions = null;
 	
 	/* Singletone implementation start */
 	public static PerformanceTransactions instance = null;
@@ -21,31 +22,37 @@ public class PerformanceTransactions {
 	
 	protected PerformanceTransactions() {
 		//this.transactions = new ArrayList<PerformanceTransaction>();
-		this.iterative_transactions = new ArrayList<ArrayList<PerformanceTransaction>>();
+		this.transactions = new HashMap<Integer, ArrayList<PerformanceTransaction>>();
 	}
 	/* Singletone implementation end */
 	
-	public ArrayList<ArrayList<PerformanceTransaction>> getTransactions() {
+	public HashMap<Integer, ArrayList<PerformanceTransaction>> getTransactions() {
 		//return this.transactions;
-		return this.iterative_transactions;
+		return this.transactions;
 	}
 	
 	public PerformanceTransaction getPerformanceTransactionByName(String transactionName, int iteration){
 		PerformanceTransaction tr = null;
-		for (PerformanceTransaction p : this.iterative_transactions.get(iteration)){
-		    if (p.getName().equals(transactionName)){
-		    	tr = p;
-		    	break;
-		    }
+		
+		if(transactions.containsKey(Integer.valueOf(iteration))){
+			if(transactions.get(Integer.valueOf(iteration)) != null){
+				for (PerformanceTransaction p : transactions.get(Integer.valueOf(iteration)) ){
+					if (p.getName().equals(transactionName)){
+						tr = p;
+						break;
+					}
+				}
+			}
 		}
+		
 		return tr;
 	}
 
 	public boolean removePerformanceTransactionbyName(String transactionName, int iteration){
 		boolean removed = false;
-		for (PerformanceTransaction tr : this.iterative_transactions.get(iteration)){
+		for (PerformanceTransaction tr : transactions.get(Integer.valueOf(iteration))){
 		    if (tr.getName().equals(transactionName)){
-		    	this.iterative_transactions.get(iteration).remove(tr);
+		    	transactions.get(Integer.valueOf(iteration)).remove(tr);
 		    	removed = true;
 		    	break;
 		    }
@@ -69,9 +76,14 @@ public class PerformanceTransactions {
 			this.removePerformanceTransactionbyName(tr.getName(), iteration);
 		}
 		
-		this.iterative_transactions.get(iteration).add(tr);
+		if(!transactions.containsKey(Integer.valueOf(iteration))){
+			this.transactions.put(Integer.valueOf(iteration), new ArrayList<PerformanceTransaction>());
+		}
+		transactions.get(Integer.valueOf(iteration)).add(tr);
+				
 		return true;
 	}
+
 
 	public String getSummary() {
 		String summary = "";
@@ -80,9 +92,11 @@ public class PerformanceTransactions {
 		
 		/*Detailed - per iteration*/
 		int iterationNumber = 0;
-		for (ArrayList<PerformanceTransaction> iteration :this.iterative_transactions) {
+		
+		
+		for (Integer iterationKey : this.transactions.keySet()){
 			iterationNumber++;
-			for (PerformanceTransaction tr : iteration){
+			for (PerformanceTransaction tr : this.transactions.get(iterationKey)){
 				String name = tr.getName();
 				long duration = (tr.getEndTimestamp() - tr.getBeginTimestamp());
 				
@@ -94,8 +108,9 @@ public class PerformanceTransactions {
 					averages.put(name, duration);
 				}
 				
-			}			
-		}		
+			}
+		}
+		
 		
 		/*Averages*/
 		for (String key : averages.keySet()) {
