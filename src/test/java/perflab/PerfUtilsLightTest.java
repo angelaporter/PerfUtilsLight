@@ -23,7 +23,7 @@ public class PerfUtilsLightTest extends TestCase {
 		{
 		
 			PerfUtilsLight.PerformanceTransactionStart(transactions, "trans_1", iteration);
-			
+			// replace with a transaction
 			try {
 				Thread.sleep(1000 + iteration );
 			} catch (InterruptedException e) {
