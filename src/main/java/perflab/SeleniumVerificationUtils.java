@@ -8,13 +8,62 @@ import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NotFoundException;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class SeleniumVerificationUtils {
 	static int tt = 2;
+	
+	
+	public static WebDriver openLocalChromeBrowser(List<String> switchesList, String proxyURL, String proxyBypass){
+		System.setProperty("webdriver.chrome.driver", "C:\\Selenium\\Drivers\\chromedriver.exe");
+	    DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+	    if((proxyURL != null) && (!proxyURL.isEmpty()))
+	    {
+	        Proxy proxy = new Proxy();
+	        proxy.setAutodetect(false);
+	        proxy.setSslProxy(proxyURL);
+	        proxy.setHttpProxy(proxyURL);
+	        if((proxyBypass != null) && (!proxyBypass.isEmpty())) {
+	            proxy.setNoProxy(proxyBypass);
+	        }
+	        capabilities.setCapability("proxy", proxy);
+	    }
+	    ChromeOptions _options = new ChromeOptions();
+	    if(switchesList != null) {
+	    	_options.addArguments(switchesList); 
+	    	_options.addArguments("--test-type");
+	        capabilities.setCapability(ChromeOptions.CAPABILITY, _options);
+	        System.out.println("switchesList is: " + switchesList.toString());
+	    }
+	    WebDriver driver = new ChromeDriver(capabilities); 
+	    return driver;
+	}
+	
+	public static List<WebElement> fetchTiles(WebDriver driver,  List<WebElement> fioriAppTiles) {
+
+		try {
+			fioriAppTiles = waitForElements(driver,30, By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
+			System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");
+		} catch (Exception e) {
+			System.out.println("ERROR: fioriAppTiles.get(i) exception is swallowed by purpose\nrefetching tiles");
+			e.printStackTrace();
+			fioriAppTiles = waitForElements(driver,30,By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
+			if (fioriAppTiles.size() == 0) {
+				throw new NotFoundException(
+						"\n\nERROR: fiori APPs tiles not found\n\n");
+			}
+		}
+		return fioriAppTiles;
+	}
+	
+	
 	/****
 	 * check if 1 element is visible
 	 * @param driver
@@ -124,6 +173,7 @@ public class SeleniumVerificationUtils {
 		System.out.println("DEBUG:  VerifyElementsAsync took "  + (System.currentTimeMillis() - _startTime) + "\n<=================================================>\n");
 		return _displayed;
 	}	
+	
 	/**
 	 * this will iterate over the entire list of elements and check they are all visible. has bigger overhead
 	 * @param webdriver
@@ -207,7 +257,8 @@ public class SeleniumVerificationUtils {
 			dynamicElement = (new WebDriverWait(driver, timeOutInSecs))
 					.until(ec);
 		} catch (org.openqa.selenium.TimeoutException te) {
-			System.out.println("ERROR: Can't find object by this condition.");
+			te.printStackTrace();
+			System.out.println("ERROR: Can't find object by this condition:" + ec.toString());
 		}
 		return dynamicElement;
 	}

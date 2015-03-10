@@ -28,7 +28,7 @@ public class SeleniumTest extends TestCase {
 	HashMap<String, String> test_data;
 	static WebDriver driver = null;
 	int how_many_tiles = 17;
-	boolean sso = false;
+	boolean sso = true;
 	
 	protected void setUp() throws Exception {	
 		Runtime.getRuntime().exec("taskkill /f /IM chromedriver.exe ");
@@ -46,6 +46,7 @@ public class SeleniumTest extends TestCase {
 	protected void tearDown() throws Exception {
 		
 		super.tearDown();
+		destroyDriver();
 	}
 	
 	public void testFullCycle() {
@@ -58,8 +59,8 @@ public class SeleniumTest extends TestCase {
 		String _transactionName = null;
 
 //scenario start	
-		for (int iteration = 0; iteration < 6 ; iteration++) {													 	 		
-				driver = openLocalChromeBrowser(Arrays.asList("--incognito", "-start-maximized"), proxyURL, proxyBypass);		
+		for (int iteration = 0; iteration < 1 ; iteration++) {													 	 		
+				driver = SeleniumVerificationUtils.openLocalChromeBrowser(Arrays.asList("--incognito", "-start-maximized"), proxyURL, proxyBypass);		
 //start measurements
 				SeleniumVerificationUtils.shluff(2);
 				if (!sso){
@@ -119,16 +120,16 @@ public class SeleniumTest extends TestCase {
 				dashboardSize = driver.findElements(By.className("sapUshellTileInner")).size();			
 				System.out.println("Dashboard Size is: " + dashboardSize +" LP loaded........ :)" );				
 				//get app names from the fiori app tiles to iterate over the apps	
-				fioriAppTiles = fetchTiles(fioriAppTiles);		
+				fioriAppTiles = SeleniumVerificationUtils.fetchTiles(driver, fioriAppTiles);		
 				if(fioriAppTiles.size() == 0 )throw new NotFoundException("\n\nERROR: fiori APPs tiles not found\n\n"  );
 				System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");		
 				ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
 				
-				for (int tile = 1 ; tile < 1 /*(fioriAppTiles.size())*/; tile++ ){
+				for (int tile = 1 ; tile < (fioriAppTiles.size()); tile++ ){
 				
 					SeleniumVerificationUtils.shluff(2);	
 					_transactionName = null;
-					fioriAppTiles = fetchTiles(fioriAppTiles);				
+					fioriAppTiles = SeleniumVerificationUtils.fetchTiles(driver, fioriAppTiles);				
 					_transactionName = fioriAppTiles.get(tile).getText();
 					System.out.println("INFO: transaction " + _transactionName);							 
 					/**
@@ -149,7 +150,7 @@ public class SeleniumTest extends TestCase {
 					if (tabs.size()>1){
 						driver.switchTo().window(tabs.get(1));
 					}  
-					SeleniumVerificationUtils.VerifyElement(driver,By.tagName("html"), 10); 
+					SeleniumVerificationUtils.VerifyElement(driver,By.tagName(test_data.get(_transactionName)), 10); 
 					
 					/*********
 					//"html" should be replaced with relevant DOM element for validation, By.tagName -> By.cssSelector 
@@ -170,20 +171,8 @@ public class SeleniumTest extends TestCase {
 			    
 				    /*****************************************
 				     * 020_Reload_Launchpad - to be sure we are in the first tab
-				     *****************************************/
-	
-					_transactionName = "020_Reload_Launchpad";			
-					PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
-					driver.get(url);
-					SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
-					PerfUtilsLight.PerformanceTransactionEnd(transactions, _transactionName, iteration);	
-					
-					
-					PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
-					driver.get(url);
-					SeleniumVerificationUtils.VerifyElementsSync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
-					PerfUtilsLight.PerformanceTransactionEnd(transactions, _transactionName, iteration);
-
+				     *****************************************/						
+					driver.get(url);									
 				}
 				destroyDriver();			
 		}
@@ -202,47 +191,7 @@ public class SeleniumTest extends TestCase {
 		
 	}
 
-	public static WebDriver openLocalChromeBrowser(List<String> switchesList, String proxyURL, String proxyBypass){
-		System.setProperty("webdriver.chrome.driver", "C:\\Selenium\\Drivers\\chromedriver.exe");
-	    DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-	    if((proxyURL != null) && (!proxyURL.isEmpty()))
-	    {
-	        Proxy proxy = new Proxy();
-	        proxy.setAutodetect(false);
-	        proxy.setSslProxy(proxyURL);
-	        proxy.setHttpProxy(proxyURL);
-	        if((proxyBypass != null) && (!proxyBypass.isEmpty())) {
-	            proxy.setNoProxy(proxyBypass);
-	        }
-	        capabilities.setCapability("proxy", proxy);
-	    }
-	    ChromeOptions _options = new ChromeOptions();
-	    if(switchesList != null) {
-	    	_options.addArguments(switchesList); 
-	    	_options.addArguments("--test-type");
-	        capabilities.setCapability(ChromeOptions.CAPABILITY, _options);
-	        System.out.println("switchesList is: " + switchesList.toString());
-	    }
-	    WebDriver driver = new ChromeDriver(capabilities); 
-	    return driver;
-	}
 	
-	private static List<WebElement> fetchTiles(List<WebElement> fioriAppTiles) {
-
-		try {
-			fioriAppTiles = SeleniumVerificationUtils.waitForElements(driver,30, By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
-			System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");
-		} catch (Exception e) {
-			System.out.println("ERROR: fioriAppTiles.get(i) exception is swallowed by purpose\nrefetching tiles");
-			e.printStackTrace();
-			fioriAppTiles = SeleniumVerificationUtils.waitForElements(driver,30,By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
-			if (fioriAppTiles.size() == 0) {
-				throw new NotFoundException(
-						"\n\nERROR: fiori APPs tiles not found\n\n");
-			}
-		}
-		return fioriAppTiles;
-	}
 
 
 }
