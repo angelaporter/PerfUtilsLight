@@ -10,10 +10,13 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
 import junit.framework.TestCase;
 
 public class SeleniumTest extends TestCase {
@@ -27,7 +30,7 @@ public class SeleniumTest extends TestCase {
 	PerformanceTransactions transactions;
 	HashMap<String, String> test_data;
 	static WebDriver driver = null;
-	int how_many_tiles = 17;
+	int numOfExpectedObjects = 17;
 	boolean sso = true;
 	
 	protected void setUp() throws Exception {	
@@ -50,6 +53,7 @@ public class SeleniumTest extends TestCase {
 	}
 	
 	public void testFullCycle() {
+				
 				
 		PerformanceTransactions transactions = PerformanceTransactions.getInstance();
 		Logger.getRootLogger().setLevel(Level.DEBUG);
@@ -81,7 +85,7 @@ public class SeleniumTest extends TestCase {
 				    _transactionName = "010_Submit_login_Open_Launchpad";	
 				    PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
 				    okBtn.click();
-				    SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
+				    SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(test_data.get(_transactionName)), numOfExpectedObjects, 30);
 				    PerfUtilsLight.PerformanceTransactionEnd(transactions,_transactionName, iteration);
 			    /*****************************************/
 				}else{
@@ -89,7 +93,7 @@ public class SeleniumTest extends TestCase {
 					_transactionName = "010_Just_Open_Launchpad";	
 					PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
 					driver.get(url);
-					SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
+					SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(test_data.get(_transactionName)), numOfExpectedObjects, 30);
 					PerfUtilsLight.PerformanceTransactionEnd(transactions,_transactionName, iteration);	
 					
 				}
@@ -99,7 +103,7 @@ public class SeleniumTest extends TestCase {
 					_transactionName = "ASYNCH_Reload_Launchpad";			
 					PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
 					driver.get(url);
-					SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
+					SeleniumVerificationUtils.VerifyElementsAsync(driver, By.cssSelector(test_data.get(_transactionName)), numOfExpectedObjects, 30);
 					PerfUtilsLight.PerformanceTransactionEnd(transactions, _transactionName, iteration);					
 					SeleniumVerificationUtils.shluff(2);
 				}
@@ -107,7 +111,7 @@ public class SeleniumTest extends TestCase {
 					_transactionName = "SYNCH_Reload_Launchpad";		
 					PerfUtilsLight.PerformanceTransactionStart(transactions, _transactionName, iteration);
 					driver.get(url);
-					SeleniumVerificationUtils.VerifyElementsSync(driver, By.cssSelector(".sapUshellTileBase"), how_many_tiles, 30);
+					SeleniumVerificationUtils.VerifyElementsSync(driver, By.cssSelector(test_data.get(_transactionName)), numOfExpectedObjects, 30);
 					PerfUtilsLight.PerformanceTransactionEnd(transactions, _transactionName, iteration);
 					SeleniumVerificationUtils.shluff(2);
 				}
@@ -117,10 +121,9 @@ public class SeleniumTest extends TestCase {
 			    /*****************************************
 			     * Bonus part of iterating through applications by clicking on tiles
 			     *****************************************/
-				dashboardSize = driver.findElements(By.className("sapUshellTileInner")).size();			
-				System.out.println("Dashboard Size is: " + dashboardSize +" LP loaded........ :)" );				
+						
 				//get app names from the fiori app tiles to iterate over the apps	
-				fioriAppTiles = SeleniumVerificationUtils.fetchTiles(driver, fioriAppTiles);		
+				fioriAppTiles = fetchTiles(driver, fioriAppTiles);		
 				if(fioriAppTiles.size() == 0 )throw new NotFoundException("\n\nERROR: fiori APPs tiles not found\n\n"  );
 				System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");		
 				ArrayList<String> tabs = new ArrayList<String> (driver.getWindowHandles());
@@ -129,7 +132,7 @@ public class SeleniumTest extends TestCase {
 				
 					SeleniumVerificationUtils.shluff(2);	
 					_transactionName = null;
-					fioriAppTiles = SeleniumVerificationUtils.fetchTiles(driver, fioriAppTiles);				
+					fioriAppTiles = fetchTiles(driver, fioriAppTiles);				
 					_transactionName = fioriAppTiles.get(tile).getText();
 					System.out.println("INFO: transaction " + _transactionName);							 
 					/**
@@ -149,7 +152,7 @@ public class SeleniumTest extends TestCase {
 					tabs = new ArrayList<String> (driver.getWindowHandles());
 					if (tabs.size()>1){
 						driver.switchTo().window(tabs.get(1));
-					}  
+					} 
 					SeleniumVerificationUtils.VerifyElement(driver,By.tagName(test_data.get(_transactionName)), 10); 
 					
 					/*********
@@ -180,6 +183,22 @@ public class SeleniumTest extends TestCase {
 		String summary =  PerfUtilsLight.PerformanceTransactionsSummary(transactions);
 		System.out.println(summary);	
 		
+	}
+	
+	public static List<WebElement> fetchTiles(WebDriver driver,  List<WebElement> fioriAppTiles) {
+		try {
+			fioriAppTiles = SeleniumVerificationUtils.waitForElements(driver,30, By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
+			System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");
+		} catch (Exception e) {
+			System.out.println("ERROR: fioriAppTiles.get(i) exception is swallowed by purpose\nrefetching tiles");
+			e.printStackTrace();
+			fioriAppTiles = SeleniumVerificationUtils.waitForElements(driver,30,By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
+			if (fioriAppTiles.size() == 0) {
+				throw new NotFoundException(
+						"\n\nERROR: fiori APPs tiles not found\n\n");
+			}
+		}
+		return fioriAppTiles;
 	}
 	
 	private void destroyDriver() {

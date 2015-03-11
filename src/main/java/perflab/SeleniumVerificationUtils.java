@@ -20,7 +20,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class SeleniumVerificationUtils {
 	static int tt = 2;
 	
-	
 	public static WebDriver openLocalChromeBrowser(List<String> switchesList, String proxyURL, String proxyBypass){
 		System.setProperty("webdriver.chrome.driver", "C:\\Selenium\\Drivers\\chromedriver.exe");
 	    DesiredCapabilities capabilities = DesiredCapabilities.chrome();
@@ -46,23 +45,7 @@ public class SeleniumVerificationUtils {
 	    return driver;
 	}
 	
-	public static List<WebElement> fetchTiles(WebDriver driver,  List<WebElement> fioriAppTiles) {
-
-		try {
-			fioriAppTiles = waitForElements(driver,30, By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
-			System.out.println("INFO: found " + fioriAppTiles.size() + " APPs");
-		} catch (Exception e) {
-			System.out.println("ERROR: fioriAppTiles.get(i) exception is swallowed by purpose\nrefetching tiles");
-			e.printStackTrace();
-			fioriAppTiles = waitForElements(driver,30,By.cssSelector(".sapUshellTileBase[id*=\"__tile\"]>div>h3"));
-			if (fioriAppTiles.size() == 0) {
-				throw new NotFoundException(
-						"\n\nERROR: fiori APPs tiles not found\n\n");
-			}
-		}
-		return fioriAppTiles;
-	}
-	
+		
 	
 	/****
 	 * check if 1 element is visible
@@ -270,7 +253,7 @@ public class SeleniumVerificationUtils {
             public List<WebElement>apply(WebDriver d) {
                 return d.findElements(by); 
         }});
-		System.out.println("waitForElements EBD : " + (System.currentTimeMillis() - start));
+		//System.out.println("waitForElements: " + (System.currentTimeMillis() - start));
 		return dynamicElements;
     }
 	
