@@ -119,4 +119,57 @@ public class PerformanceTransactions {
 		
 		return summary;
 	}	
+	
+	public String getAveragesCsv() {
+		String headers = "";
+		String body = "";
+	
+		HashMap<String, Long> averages = new HashMap<String, Long>(); 
+		
+		/*Detailed - per iteration*/
+		int iterationNumber = 0;
+		
+		
+		for (Integer iterationKey : this.transactions.keySet()){
+			iterationNumber++;
+			for (PerformanceTransaction tr : this.transactions.get(iterationKey)){
+				String name = tr.getName();
+				long duration = (tr.getEndTimestamp() - tr.getBeginTimestamp());					
+				
+				if( averages.containsKey(name) ){
+					averages.put(name, averages.get(name) + duration);
+				}else{
+					averages.put(name, duration);
+				}
+				
+			}
+		}
+		
+		
+		/*Averages headers*/
+		int i = 0;
+		for (String key : averages.keySet()) {
+			i++;
+			headers += key;
+			if (i < averages.size()){
+				headers +=	"," ;	
+			}	    
+		}
+		headers += "\n";
+		
+		/*Averages csv*/
+		i = 0;
+		for (String key : averages.keySet()) {
+			i++;
+			body +=  (averages.get(key)/iterationNumber) + "" ;
+			if (i < averages.size()){
+				body +=	"," ;	
+			}
+			
+		}
+		body += "\n";
+		String csv = headers + body;
+		
+		return csv;
+	}	
 }
