@@ -8,7 +8,8 @@ public class PerformanceTransactions {
 	//Collection of performance transactions
 	//private ArrayList<PerformanceTransaction> transactions = null;
 	//private ArrayList<ArrayList<PerformanceTransaction>> iterative_transactions = null;
-	private HashMap<Integer, ArrayList<PerformanceTransaction>> transactions = null;
+	private HashMap<Integer, ArrayList<PerformanceTransaction>> transactions = null;	
+	private HashMap<String, Long> averages = null;
 	
 	/* Singletone implementation start */
 	public static PerformanceTransactions instance = null;
@@ -23,6 +24,7 @@ public class PerformanceTransactions {
 	protected PerformanceTransactions() {
 		//this.transactions = new ArrayList<PerformanceTransaction>();
 		this.transactions = new HashMap<Integer, ArrayList<PerformanceTransaction>>();
+		this.averages  = new HashMap<String, Long>(); 
 	}
 	/* Singletone implementation end */
 	
@@ -88,7 +90,6 @@ public class PerformanceTransactions {
 	public String getSummary() {
 		String summary = "";
 	
-		HashMap<String, Long> averages = new HashMap<String, Long>(); 
 		
 		/*Detailed - per iteration*/
 		int iterationNumber = 0;
@@ -102,10 +103,10 @@ public class PerformanceTransactions {
 				
 				summary += iterationNumber + " : " + name + " : " + duration + "\n";
 				
-				if( averages.containsKey(name) ){
-					averages.put(name, averages.get(name) + duration);
+				if( this.averages.containsKey(name) ){
+					this.averages.put(name, this.averages.get(name) + duration);
 				}else{
-					averages.put(name, duration);
+					this.averages.put(name, duration);
 				}
 				
 			}
@@ -114,7 +115,7 @@ public class PerformanceTransactions {
 		
 		/*Averages*/
 		for (String key : averages.keySet()) {
-			summary += "Avg" + " : " + key + " : " + ( averages.get(key)/iterationNumber ) + "\n";		    
+			summary += "Avg" + " : " + key + " : " + ( this.averages.get(key)/iterationNumber ) + "\n";		    
 		}
 		
 		return summary;
@@ -122,36 +123,20 @@ public class PerformanceTransactions {
 	
 	public String getAveragesCsv() {
 		String headers = "";
-		String body = "";
-	
-		HashMap<String, Long> averages = new HashMap<String, Long>(); 
+		String body = "";	
 		
 		/*Detailed - per iteration*/
-		int iterationNumber = 0;
-		
-		
-		for (Integer iterationKey : this.transactions.keySet()){
-			iterationNumber++;
-			for (PerformanceTransaction tr : this.transactions.get(iterationKey)){
-				String name = tr.getName();
-				long duration = (tr.getEndTimestamp() - tr.getBeginTimestamp());					
-				
-				if( averages.containsKey(name) ){
-					averages.put(name, averages.get(name) + duration);
-				}else{
-					averages.put(name, duration);
-				}
-				
-			}
+		if (this.averages.size() == 0)	{
+			return "no data";
 		}
 		
 		
 		/*Averages headers*/
 		int i = 0;
-		for (String key : averages.keySet()) {
+		for (String key : this.averages.keySet()) {
 			i++;
 			headers += key;
-			if (i < averages.size()){
+			if (i < this.averages.size()){
 				headers +=	"," ;	
 			}	    
 		}
@@ -159,10 +144,10 @@ public class PerformanceTransactions {
 		
 		/*Averages csv*/
 		i = 0;
-		for (String key : averages.keySet()) {
+		for (String key : this.averages.keySet()) {
 			i++;
-			body +=  (averages.get(key)/iterationNumber) + "" ;
-			if (i < averages.size()){
+			body +=  (this.averages.get(key)/this.transactions.size()) + "" ;
+			if (i < this.averages.size()){
 				body +=	"," ;	
 			}
 			
