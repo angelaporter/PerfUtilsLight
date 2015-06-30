@@ -1,18 +1,24 @@
-010_Just_Open_Launchpad,html
-Internal Store,html
-People@SAP,html
-SAP Community Network,html
-SAP Jam,html
-Enterprise Analytics Store,html
-Mobile Documents,html
-Leave Request,html
-Travel & Expenses,html
-SuccessMaps,html
-openSAP,html
-SRM Shopping,html
-Approve Incoming Invoice,html
-Approve Shopping Carts,html
-Track Shopping Carts,html
-ITdirect,html
-Emergency,html
-HRdirect,html
+protocol,http://
+host,ilperf105.perflab.com:
+port,8080
+app_login_user,sflight:welcome@
+login_user,perf_user_64:Perf1111@
+loginPath,/sap/bc/ui5_ui5/ui2/ushell/shells/abap/FioriLaunchpad.html?sap-client,100
+app,#Flight-bookFlight
+start_up,/sap/bc/ui2/start_up?sap-client,100&shellType,FLP&depth,0
+targetGroup,ZFF2BCH1PAGE_001
+targetTile,ZFF2BCH1GADGET_001
+destinationGroup,ZFF2BCH1PAGE_001
+destinationTile,ZFF2BCH1GADGET_002
+driver.timeout.seconds,20
+script.timeout.seconds,30
+ShellHeader,true
+SystemType,Tomcat
+NumberOfTiles,64
+UserName,perf_user_64
+Password,Perf1111
+Logout,false
+Application,false
+Personalization,false
+proxyURL,"proxy.wdf.sap.corp:8080"
+proxyBypass,"localhost,*.perflab.com,*.sap-ag.de;*.sap.corp;*.global.corp.sap;10.*.*.*"
