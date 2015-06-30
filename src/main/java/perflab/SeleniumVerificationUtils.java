@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.openqa.selenium.By;
+import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.NotFoundException;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.WebDriver;
@@ -314,6 +316,24 @@ public class SeleniumVerificationUtils {
 		}
 		
 	}
+	
+	
+	public static boolean waitUntilElementIsClickable(WebDriver driver,long timeOutInSecs, final WebElement elementToWaitFor) {
+		shluff_ms(600);
+		driver.manage().timeouts().implicitlyWait(0, TimeUnit.SECONDS);
+		try {
+			new WebDriverWait(driver, timeOutInSecs).until(ExpectedConditions.elementToBeClickable(elementToWaitFor));
+			return true;
+		} catch (org.openqa.selenium.TimeoutException te) {
+			return false;
+		}
+		finally {
+			driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+		}
+	}
+	
+	
+	
 	
 }
 
